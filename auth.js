@@ -28,9 +28,9 @@ btnCreate.addEventListener('click', e =>{
 
 
         //Cadastro outras info 
-        const btnAtt = document.getElementById('btnATT');
+        const btnCadastrar = document.getElementById('btnCadastrar');
 
-        btnAtt.addEventListener('click', e =>{
+        btnCadastrar.addEventListener('click', e =>{
         var user = firebase.auth().currentUser;
         var TXTnome = document.getElementById('userName');
         var TXTlocal = document.getElementById('local');
