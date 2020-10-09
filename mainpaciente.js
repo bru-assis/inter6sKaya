@@ -49,7 +49,7 @@ function exibir(id){
 function consultas(){
     const user = firebase.auth().currentUser;
     let consultas = [];
-      firebase.firestore().collection('users').where("P_ID", "==", user.uid)
+      firebase.firestore().collection('consultas').where("P_ID", "==", user.uid)
       .get()
       .then(function(querySnapshot) {
           querySnapshot.forEach(function(doc) {
