@@ -7,7 +7,7 @@ firebase.auth().onAuthStateChanged(user => {
 
 
 //Lista de pacientes
-function pacientes(){
+/*function pacientes(){
   const user = firebase.auth().currentUser;
   let pacientes = [];
     firebase.firestore().collection('consultas').where("M_ID", "==", user.uid)
@@ -29,7 +29,7 @@ function pacientes(){
     .catch(function(error) {
         console.log("Error getting documents: ", error);
     });
-}
+}*/
 
 
 //Consultas
@@ -46,8 +46,9 @@ function consultas(){
         let html = '';
         consultas.forEach(consulta => {
           html += `<li id= ${consulta.id}>`;
-          html += `<h5> ${consulta.data}</h5>`;
-          html += `<h5> ${consulta.nomeP}</h5>`;
+          html += `<h5> ${consulta.dia} / ${consulta.mes}</h5>`;
+          html += `<h5> ${consulta.horario}</h5>`;
+          html += `<h5> ${consulta.paciente}</h5>`;
           html += `</li>`
         });
         document.getElementById('Mconsultas').innerHTML = html;
@@ -56,4 +57,4 @@ function consultas(){
     .catch(function(error) {
         console.log("Error getting documents: ", error);
     });
-}
+};
