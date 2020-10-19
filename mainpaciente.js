@@ -1,13 +1,37 @@
 //Nome
 firebase.auth().onAuthStateChanged(user => {
     if (user) {
-          document.getElementById("nomeUser").innerHTML = user.displayName;      
-    };
-  });
+          document.getElementById("nomeUser").innerHTML = user.displayName;  
+          
+ //Chat
+  let conversas = [];
+  firebase.firestore().collection('chat').where("Id_p", "==", user.uid)
+      .get()
+      .then(function(querySnapshot) {
+          querySnapshot.forEach(function(doc) {
+            conversas.push({...doc.data(), id: doc.id});
+          });
+          let html = '';
+          conversas.forEach(conversa => {
+            html += `<li data-id= ${conversa.id} onclick="chatpg(this)">`;
+            html += `<h5> ${conversa.medico}</h5>`;
+            html += `</li>`;
+          });
+          document.getElementById('meuchat').innerHTML = html;
+      })
+      .catch(function(error) {
+          console.log("Error getting documents: ", error);
+      });
+
 
   //Minhas consultas
+  //Identificado que dia é hoje
+  var dt = new Date();
+  var d = dt.getDate();
+  var m = dt.getMonth()+1;
+  //Consultas anteriores
   let consultas = [];
-  firebase.firestore().collection('consultas').where("P_ID", "==", user.uid)
+  firebase.firestore().collection('consultas').where("P_ID", "==", user.uid).where("dia",">=",d).where("mes","==",m)
   .get()
   .then(function(querySnapshot) {
       querySnapshot.forEach(function(doc) {
@@ -21,14 +45,40 @@ firebase.auth().onAuthStateChanged(user => {
         html += `<h5> ${consulta.medico}</h5>`;
         html += `</li>`;
       });
-      document.getElementById('Pconsultas').innerHTML = html;
+      document.getElementById('Cprox').innerHTML = html;
 
-  })
+    })
   .catch(function(error) {
       console.log("Error getting documents: ", error);
-  });     
-};
-});
+    }); 
+    
+    //Consultas seguintes
+    let consultas2 = [];
+  firebase.firestore().collection('consultas').where("P_ID", "==", user.uid).where("dia","<",d).where("mes","==",m)
+  .get()
+  .then(function(querySnapshot) {
+      querySnapshot.forEach(function(doc) {
+        consultas2.push({...doc.data(), id: doc.id});
+      });
+      let html = '';
+      consultas2.forEach(consulta => {
+        html += `<li id= ${consulta.id}>`;
+        html += `<h5> ${consulta.dia} / ${consulta.mes}</h5>`;
+        html += `<h5> ${consulta.horario}</h5>`;
+        html += `<h5> ${consulta.medico}</h5>`;
+        html += `</li>`;
+      });
+      document.getElementById('Canteriores').innerHTML = html;
+
+    })
+  .catch(function(error) {
+      console.log("Error getting documents: ", error);
+    }); 
+  };
+});   
+    
+
+
 
 
 //Exibe a lista de médicos
@@ -71,7 +121,11 @@ firebase.auth().onAuthStateChanged(user => {
             html += `<h5> Horários: </h5>`;
             html += `<span id="hrs"></span>`;
 
-            refs = firebase.firestore().collection('consultas').where("M_ID", "==", med.id);
+            var dt = new Date();
+            var d = dt.getDate();
+            var m = dt.getMonth() +1;
+            refs = firebase.firestore().collection('consultas').where("M_ID", "==", med.id).where("dia",">=",d).where("mes","==",m)
+            .where("status","==","disponível");
             let horarios = [];
             refs.get().then(function(querySnapshot){
               querySnapshot.forEach(function(doc){
@@ -117,26 +171,46 @@ firebase.auth().onAuthStateChanged(user => {
 
 
 //agendar consultas
-    function agendar(self){
-        var consultaId = self.getAttribute("data-id");
-        const user = firebase.auth().currentUser;
-        const idP = user.uid
-        const info = firebase.firestore().collection('users').doc(user.uid);
-        const consultaM = firebase.firestore().collection('consultas').doc(consultaId);
-    
-        info.onSnapshot(snapshot =>{
-            var nome = snapshot.data().nome;
-    
-            consultaM.update({
-                P_ID : idP,
-                paciente : nome,
-                status : 'indisponível'
-            });
-        });
-    };
+     function agendar(self){
+            var consultaId = self.getAttribute("data-id");
+            const user = firebase.auth().currentUser;
+            const idP = user.uid
+            const info = firebase.firestore().collection('users').doc(user.uid);
+            const consultaM = firebase.firestore().collection('consultas').doc(consultaId);
+        
+            info.onSnapshot(snapshot =>{
+                var nome = snapshot.data().nome;
+        
+                consultaM.update({
+                    P_ID : idP,
+                    paciente : nome,
+                    status : 'indisponível'
+                }).then(function(){
+                  //cria chat
+                  consultaM.onSnapshot(snapshot =>{
+                    var medId = snapshot.data().M_ID;
+                    var pId = snapshot.data().P_ID;
+                    var paciente = snapshot.data().paciente;
+                    var med = snapshot.data().medico;
+                    const saladechat = firebase.firestore().collection('chat').where("medico","==", med).where("paciente","==", paciente);
+                   saladechat.get().then(function() {
 
+                      firebase.firestore().collection('chat').doc().set({
+                        medico: med,
+                        paciente: paciente,
+                        Id_p: pId,
+                        Id_m: medId
+                      });
+                    });
+                  });
+              });
+          });
+        };
 
-//Futuramente fazer os scripts de consultas passadas e seguintes
+        function chatpg(self){
+          var consversaId = self.getAttribute("data-id");
+          location.assign("http://localhost:5000/chat.html#" + consversaId);
+        };
 
 
 
