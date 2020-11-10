@@ -29,26 +29,99 @@ btnCreate.addEventListener('click', e =>{
     });
 }); 
 
+//Info perfil
+//verifica CPF
+function TestaCPF(strCPF) {
+  var Soma;
+  var Resto;
+  Soma = 0;
+
+if (strCPF == "00000000000") return false;
+
+for (i=1; i<=9; i++) Soma = Soma + parseInt(strCPF.substring(i-1, i)) * (11 - i);
+Resto = (Soma * 10) % 11;
+
+  if ((Resto == 10) || (Resto == 11))  Resto = 0;
+  if (Resto != parseInt(strCPF.substring(9, 10)) ) return false;
+
+Soma = 0;
+  for (i = 1; i <= 10; i++) Soma = Soma + parseInt(strCPF.substring(i-1, i)) * (12 - i);
+  Resto = (Soma * 10) % 11;
+
+  if ((Resto == 10) || (Resto == 11))  Resto = 0;
+  if (Resto != parseInt(strCPF.substring(10, 11) ) ) return false;
+  return true;
+};
+
+var strCPF = document.getElementById('cpf');
+
+strCPF.addEventListener('change', e=>{
+var validar = TestaCPF(strCPF.value);
+if(validar == false){
+document.getElementById('errocpf').innerHTML = "CPF inválido."
+ };
+});
+
+//Foto
+var btnPfp = document.getElementById('imageUpload');
+
+btnPfp.addEventListener('change', e =>{
+    const file = e.target.files[0];
+    const filename = file.name;
+    const ref = firebase.storage().ref('/users/' + filename);
+    const task = ref.put(file);
+    task.then(snapshot => snapshot.ref.getDownloadURL())
+      .then(url => {
+       var pfp = document.getElementById('imageUpload');
+       pfp.src = url;
+      })
+      .catch(console.error);
+});
+
 //Cadastro outras info 
 btnCadastrar.addEventListener('click', e =>{
   var user = firebase.auth().currentUser;
   var TXTnome = document.getElementById('userName');
-  var TXTlocal = document.getElementById('local');
+  var TXTcidade = document.getElementById('city');
+  var TXTestado = document.getElementById('estado');
   var TXTespecialidade = document.getElementById('especialidade');
-  var conveniado = document.getElementById('conveniado');
-  var telemed = document.getElementById('telemed')
+  var telefone = document.getElementById('telefone');
+  var CRM = document.getElementById('crm');
   e.preventDefault();
 
+  //convênio
+  var convenio = document.getElementsById('convenio');
+  var checkC;
+  if(convenio.checked) {
+    checkC = "s";
+} else {
+    checkC = "n";
+}
+ 
+//telemedicina
+var telemed = document.getElementsById('telemed');
+var checkTM;
+if(telemed.checked) {
+  checkTM = "s";
+} else {
+  checkTM = "n";
+}
+
+
   user.updateProfile({
-    displayName: TXTnome.value 
-    //photoURL: 
+    displayName: TXTnome.value, 
+    photoURL: btnPfp.src
   });
   return firebase.firestore().collection('users').doc(user.uid).set({  
-      nome: TXTnome.value,   
-      local: TXTlocal.value,
+      nome: TXTnome.value,
+      cidade: TXTcidade.value,
+      estado: TXTestado.value,
       especialidade: TXTespecialidade.value,
-      convenio: conveniado.value,
-      telemedicina: telemed.value,
+      telefone: telefone.value,
+      cpf: strCPF.value,
+      convenio: checkC,
+      telemedicina: checkTM,
+      crm: CRM.value,
       tipo: 'medico'
     }).then(function() {
       window.location.replace("mainmed.html");
