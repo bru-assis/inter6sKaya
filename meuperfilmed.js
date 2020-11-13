@@ -1,6 +1,6 @@
-var valor = location.hash.split("#")[1];
+const user = firebase.auth().currentUser;
 
-var db = firebase.firestore().collection('users').doc(valor);
+var db = firebase.firestore().collection('users').doc(user);
 
 //add rating
 
@@ -9,9 +9,7 @@ db.onSnapshot(snapshot =>{
     var especialidade = snapshot.data().especialidade;
     var crm= snapshot.data().crm;
     var estado = snapshot.data().estado;
-    var rating = snapshot.data().rating;
-    var nRate = snapshot.data().nRates;
-    var mediaR = rating/nRate;
+    var rating = snapshot.data().rate;
     var telemed = snapshot.data().telemedicina;
     var bio = snapshot.data().bio;
 
@@ -24,10 +22,6 @@ db.onSnapshot(snapshot =>{
     if(telemed == "n"){
         document.getElementById('telemed').style = "display:none";
     };
-
-    if(mediaR < 2){
-      //estilizar de 2 a 5 em cinza
-    }
 })
 
 //endereços
@@ -184,7 +178,7 @@ let ends = [];
                  };   
 
 //publicações
- var refs2 = db.collection('publicacoes').where("mId","==", valor);
+ var refs2 = db.collection('publicacoes').where("mId","==", user.uid);
               let publi = [];
             refs2.get().then(function(querySnapshot){
               querySnapshot.forEach(function(doc){

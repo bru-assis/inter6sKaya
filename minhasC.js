@@ -13,6 +13,7 @@
         html += `<h5> ${consulta.dia} / ${consulta.mes}</h5>`;
         html += `<h5> ${consulta.horario}</h5>`;
         html += `<h5> ${consulta.medico}</h5>`;
+        html += `<h5> Avaliar: <p med-Id= ${consulta.M_ID}  data-number="1" onclick="rating(this)">1</p></h5>`;
         html += `</li>`;
 
         banco = firebase.firestore().collection('consultas').doc(consulta.id);
@@ -83,4 +84,14 @@
             location.assign("marcarconsulta.html#" + consultaId);
           };
 
-          //fazer o rating
+
+          //Rating
+
+          function rating(self){
+            var n = self.getAttribute("data-number");
+            var medId = self.getAttribute("med-Id");
+            firebase.firestore().doc(medId).update({
+              rating: firebase.firestore.FieldValue.increment(n),
+              nRates: firebase.firestore.FieldValue.increment(1)
+            });
+          };

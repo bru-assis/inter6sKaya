@@ -7,9 +7,12 @@ db.onSnapshot(snapshot =>{
     var dataP= snapshot.data().dataP;
     var title = snapshot.data().title;
     var text = snapshot.data().text;
+    var sub = snapshot.data().sub;
 
     document.getElementById('medico').innerHTML = med;
     document.getElementById('dataP').innerHTML = dataP;
     document.getElementById('title').innerHTML = title;
     document.getElementById('text').innerHTML = text;
+    document.getElementById('sub').innerHTML = sub;
 });
+
